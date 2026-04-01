@@ -10,16 +10,13 @@
    - `systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=<pcr_parameters> <luks_crypt partition>`
 
 > [!NOTE]
-> The `--tpm2-pcrs` technically aren't necessary, but should be used for security. 
 > PCRs are different values measured during and after boot. TPM checks whether the measured PCRs at the time of enrolling the keys are the same as the PCR values of the current boot.
 > If TPM measures a change in one of the locked PCRs, it won't automatically unlock the partition.
 > Without the PCR checking, the encryption is pretty much useless.
 >
-> Any external/removable drives should be removed before enrolling PCRs. Anything that might not normally be plugged into the machine during/before boot, as these affect the PCR values.
+> Any external/removable drives should be removed before enrolling PCRs. Anything that might not normally be plugged into the machine during/before boot, as these affect (some of) the PCR values.
 >
 > The more PCRs you have the slower the boot time may be. Since I'm using my machine as a server, I don't necessarily need a fast boot time, and so I prefer strong security.
->
-> You should read `TPM2` documentation on what the `--tpm2-pcrs` parameter and specified values are for.
 >
 > I personally recommend 5, 7, 11, 15:
 >
@@ -42,7 +39,7 @@ root    UUID={luks_encrypted_partition_UUID}    none    tpm2-device=auto
 ```
 
 > [!TIP]
-> It is recommended read the _ArchWiki_ documentation on `dm-crypt/System_configuration` for further details.
+> Read the _ArchWiki_ documentation on `dm-crypt/System_configuration` for further details.
 >
 > On a separate note, `root` can be replaced with any name you would like the volume to open as here.
 > Make sure you add the encrypted **partition** (`/dev/sda3` or the 3rd partition made in `./disk_partitioning.md`), not the logical volumes. 
@@ -50,6 +47,3 @@ root    UUID={luks_encrypted_partition_UUID}    none    tpm2-device=auto
 
 4. Run `mkinitcpio -P` or `mkinitcpio -p linux` again, and you are all set.
     - This is to make sure that `initramd` knows about `/etc/crypttab.initramfs`
-
-> [!NOTE]
-> You may also need to update `initramfs` (by running `mkinitcpio`) everytime you change your TPM key.

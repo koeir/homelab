@@ -4,9 +4,9 @@ disk (not including `boot` and `efi`) + TPM2 auto-unlock.
 > **[DISCLAIMER]**
 > This guide assumes that your machine is compatible with TPM2.
 > This guide includes commands to follow and explains them, but it is recommended to actually research about each command if you don't already recognize/understand them.
-> This installation does NOT include desktop environments and is designed for home server use.
+> This installation does NOT include desktop environments and is designed for home server use. 
 >
-> I suggest reading the _ArchWiki_ documentation while you follow this guide.
+> I suggest reading the *ArchWiki* documentation while you follow this guide.
 
 # ISO Flashing
 
@@ -72,7 +72,6 @@ local@machine ~ # cat ~/.ssh/archlinux.pub | netcat {arch_machine_ip} {port} -q 
 > You could also use password authentication instead of pubkey authentication. This, of course, is less secure,
 > but is more convenient (especially if you keep messing up and restarting the installation).
 > The key pair generated on the local machine (that is to say **not** the machine you are currently installing Arch on) can be reused later after Arch is installed.
-
 # Disk Partitioning
 
 1. Make partitions for boot, efi, and root filesystem using any partitioning tool.
@@ -84,7 +83,7 @@ local@machine ~ # cat ~/.ssh/archlinux.pub | netcat {arch_machine_ip} {port} -q 
 ```
 root@archiso ~ # fdisk /dev/sda
 
-# This is just a representation of the interactive fdisk-cli,
+# This is just a representation of the interactive fdisk-cli, 
 # it does not look like this exactly.
 [fdisk-interactive]
 # efi
@@ -129,11 +128,10 @@ Device       Start        End    Sectors   Size Type
 > [!NOTE]
 > The `Type` configuration isn't functionally necessary and are just metadata.
 >
-> `ESP` stands for EFI System Partition. `ESP` and `efi` might interchanged a couple time in this guide, but note that they are not necessarily the same thing. `ESP` refers to the partition where the `efi` or `uefi` resides.
+> `ESP` stands for EFI System Partition. `ESP` and `efi` might interchanged a couple time in this guide, but note that they are not necessarily the same thing. `ESP` refers to the partition where the `efi` or `uefi` resides. 
 >
 > The _ArchWiki_ docs only use one partition for `boot` and `ESP`, but this guide separates them for security and compatibility.
 > Having a separate `boot` partition also allows you to later encrypt it if you wish.
-
 # Disk Formatting (Boot and ESP)
 
 3. Format the `boot` and `efi system partitions`.
@@ -170,11 +168,10 @@ root@archiso ~ # mkswap /dev/volgroup0/lv_swap
 ```
 
 > [!NOTE]
-> `lvm` (found in `cryptsetup open` line), `volgroup0` (found in `vgcreate` line), and volumes starting with `lv_` are _conventional names_. That is to say that they can be replaced with whatever you want. The `lvm` name is also just a temporary name used for the `cryptsetup open` instance.
+> `lvm` (found in `cryptsetup open` line), `volgroup0` (found in `vgcreate` line), and volumes starting with `lv_` are *conventional names*. That is to say that they can be replaced with whatever you want. The `lvm` name is also just a temporary name used for the `cryptsetup open` instance.
 
 > [!TIP]
-> It is also possible to encrypt the `boot` partition, but that requires extra configuration. It is possible to encrypt the `boot` partition after installation.
-
+> It is also possible to encrypt the `boot` partition, but that requires extra configuration. It is possible to encrypt the `boot` partition after installation. 
 # Mounting
 
 1. Mount the respective partitions and swap
@@ -207,9 +204,7 @@ root@archiso ~ # cat /mnt/etc/fstab
 > [!NOTE]
 > The `fstab` (pronounced _ef-es-tab_) file contains information about the mounted partitions under a specified mountpoint.
 > The `-U` flag makes the `genfstab` command generates UUIDs for each device, which will be useful later.
-
 # Arch-Chroot
-
 > chroot can be entered by entering the command `arch-chroot /mnt`
 
 ## Installing Packages
@@ -217,9 +212,9 @@ root@archiso ~ # cat /mnt/etc/fstab
 1. Install _essential_ packages
    - Packages can be installed with `pacman -S package1 package2`
    - Essential list:
-     - grub efibootmgr sudo lvm2
+     - grub efibootmgr sudo lvm2 
    - Personally essential:
-     - vim networkmanager man openssh dosfstools git zsh fzf fd gpg
+     - vim networkmanager man openssh dosfstools git zsh fzf fd gpg 
 
 ## Configuring Initramfs
 
@@ -271,7 +266,8 @@ root@archiso ~ # cat /mnt/etc/fstab
 > Specifying `root=` is actually unnecessary. `grub-mkconfig` is smart enough to determine the correct root filesystem.
 > If you have swap, consider setting `resume={swap_UUID}`.
 
-7. Make a directory for the `ESP` and mount the first partition.
+
+7. Make a directory for the `ESP` and mount the first partition. 
    - `systemctl daemon-reload` might need to be called first; this command must be ran in the installer environment, as it cannot be ran in `chroot`.
 
 ```
@@ -301,31 +297,28 @@ root@archiso ~ # arch-chroot /mnt
 
 > [!WARNING]
 > Make sure this password is secure! The `root` user has access to every single file in the machine.
-> Consider _disabling_ the `root` user later and solely rely on `sudo`.
+> Consider *disabling* the `root` user later and solely rely on `sudo`.
 
 12. Create your user
-
-- `useradd -m -g users -G wheel {username}`
-- The `-m` flag adds a home directory for your user, and the `-g` and `-G`
-  flags sets groups and seconday groups for your user respectively.
+   - `useradd -m -g users -G wheel {username}`
+   - The `-m` flag adds a home directory for your user, and the `-g` and `-G`
+     flags sets groups and seconday groups for your user respectively.
 
 > [!NOTE]
 > Add the `wheel` group to the sudoers list. This can be done later after reboot.
 
 13. Exit the chroot environment.
 14. Unmount everything
-
-- `umount -R /mnt`
+   - `umount -R /mnt`
 
 > [!TIP]
 > Re-check if anything is mounted under `/mnt` with `mount`.
 
 15. Reboot.
-
 # Setting Up TPM2
 
 > For this section, I recommend reading the `Trusted Platform Module` and `dm_mod/System_configuration` documentation on ArchWiki.
-> This should be done _after_ booting into the actual installed Arch Linux operating system, not _during_ installation as `root@archiso`.
+> This should be done *after* booting into the actual installed Arch Linux operating system, not *during* installation as `root@archiso`.
 > Setting up the TPM2 keys in the installation media causes TPM to read the installation media's PCRs instead of the intended drive.
 
 1. Verify TPM2 support for your device.
@@ -334,16 +327,13 @@ root@archiso ~ # arch-chroot /mnt
    - `systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=<pcr_parameters> <luks_crypt partition>`
 
 > [!NOTE]
-> The `--tpm2-pcrs` technically aren't necessary, but should be used for security.
 > PCRs are different values measured during and after boot. TPM checks whether the measured PCRs at the time of enrolling the keys are the same as the PCR values of the current boot.
 > If TPM measures a change in one of the locked PCRs, it won't automatically unlock the partition.
 > Without the PCR checking, the encryption is pretty much useless.
 >
-> Any external/removable drives should be removed before enrolling PCRs. Anything that might not normally be plugged into the machine during/before boot, as these affect the PCR values.
+> Any external/removable drives should be removed before enrolling PCRs. Anything that might not normally be plugged into the machine during/before boot, as these affect (some of) the PCR values.
 >
 > The more PCRs you have the slower the boot time may be. Since I'm using my machine as a server, I don't necessarily need a fast boot time, and so I prefer strong security.
->
-> You should read `TPM2` documentation on what the `--tpm2-pcrs` parameter and specified values are for.
 >
 > I personally recommend 5, 7, 11, 15:
 >
@@ -366,14 +356,11 @@ root    UUID={luks_encrypted_partition_UUID}    none    tpm2-device=auto
 ```
 
 > [!TIP]
-> It is recommended read the _ArchWiki_ documentation on `dm-crypt/System_configuration` for further details.
+> Read the _ArchWiki_ documentation on `dm-crypt/System_configuration` for further details.
 >
 > On a separate note, `root` can be replaced with any name you would like the volume to open as here.
-> Make sure you add the encrypted **partition** (`/dev/sda3` or the 3rd partition made in `./disk_partitioning.md`), not the logical volumes.
+> Make sure you add the encrypted **partition** (`/dev/sda3` or the 3rd partition made in `./disk_partitioning.md`), not the logical volumes. 
 > The UUID of the encrypted `LUKS` partition can be found by running `lsblk -lf`. It should have an `FSTYPE` of `crypto_LUKS` or something similar.
 
 4. Run `mkinitcpio -P` or `mkinitcpio -p linux` again, and you are all set.
-   - This is to make sure that `initramd` knows about `/etc/crypttab.initramfs`
-
-> [!NOTE]
-> You may also need to update `initramfs` (by running `mkinitcpio`) everytime you change your TPM key.
+    - This is to make sure that `initramd` knows about `/etc/crypttab.initramfs`
